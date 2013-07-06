@@ -20,12 +20,7 @@ def main():
 	for ref in refs:
 		added = False
 		for group in groups:
-			try:
-				with open('/dev/null', 'w') as null:
-					subprocess.check_call(['git', 'merge-base', ref, group.base], stdout=null)
-			except subprocess.CalledProcessError:
-				pass
-			else:
+			if have_shared_base(ref, group.base):
 				group.refs.append(ref)
 				added = True
 				break
@@ -46,6 +41,16 @@ def get_references():
 	for ref in refs:
 		if ref:
 			yield ref
+
+
+def have_shared_base(*refs):
+	try:
+		with open('/dev/null', 'w') as null:
+			subprocess.check_call(['git', 'merge-base'] + list(refs), stdout=null)
+	except subprocess.CalledProcessError:
+		return False
+	else:
+		return True
 
 
 if __name__ == '__main__':
