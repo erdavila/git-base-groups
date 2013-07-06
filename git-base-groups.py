@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from __future__ import print_function
-from collections import namedtuple
 import subprocess
 '''
 	TODO:
@@ -9,7 +8,10 @@ import subprocess
 '''
 
 
-Group = namedtuple('Group', ['base', 'refs'])
+class Group(object):
+	def __init__(self, base, refs):
+		self.base = base
+		self.refs = refs
 
 
 def main():
@@ -20,8 +22,10 @@ def main():
 	for ref in refs:
 		added = False
 		for group in groups:
-			if have_shared_base(ref, group.base):
+			base = get_base(ref, group.base)
+			if base:
 				group.refs.append(ref)
+				group.base = base
 				added = True
 				break
 		if not added:
@@ -43,14 +47,14 @@ def get_references():
 			yield ref
 
 
-def have_shared_base(*refs):
+def get_base(*refs):
 	try:
-		with open('/dev/null', 'w') as null:
-			subprocess.check_call(['git', 'merge-base'] + list(refs), stdout=null)
+		base_output = subprocess.check_output(['git', 'merge-base'] + list(refs))
 	except subprocess.CalledProcessError:
-		return False
+		base = None
 	else:
-		return True
+		base = base_output.split('\n')[0]
+	return base
 
 
 if __name__ == '__main__':
