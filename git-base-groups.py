@@ -32,20 +32,22 @@ def main():
 			new_group = Group(base=ref, refs=[ref])
 			groups.append(new_group)
 	
+	groups.sort(key=lambda group:group.base)
+	
 	refs_without_common_base = []
 	for group in groups:
 		if len(group.refs) == 1:
 			refs_without_common_base.append(group.refs[0])
 		else:
 			print("Have common base", group.base + ":")
-			for ref in group.refs:
+			for ref in sorted(group.refs):
 				print('\t', ref)
 			
 			print()
 	
 	if refs_without_common_base:
 		print("Without common base:")
-		for ref in refs_without_common_base:
+		for ref in sorted(refs_without_common_base):
 			print('\t', ref)
 
 
