@@ -10,33 +10,39 @@ import subprocess
 def main():
 	groups = []
 	
-	refs = subprocess.check_output(['git', 'rev-parse', '--symbolic', '--all'])
-	refs = refs.split('\n')
+	refs = get_references()
 	
 	for ref in refs:
-		if ref:
-			added = False
-			for group in groups:
-				group_first_ref = group[0]
-				try:
-					with open('/dev/null', 'w') as null:
-						subprocess.check_call(['git', 'merge-base', ref, group_first_ref], stdout=null)
-				except subprocess.CalledProcessError:
-					pass
-				else:
-					group.append(ref)
-					added = True
-					break
-			if not added:
-				new_group = [ref]
-				groups.append(new_group)
+		added = False
+		for group in groups:
+			group_first_ref = group[0]
+			try:
+				with open('/dev/null', 'w') as null:
+					subprocess.check_call(['git', 'merge-base', ref, group_first_ref], stdout=null)
+			except subprocess.CalledProcessError:
+				pass
+			else:
+				group.append(ref)
+				added = True
+				break
+		if not added:
+			new_group = [ref]
+			groups.append(new_group)
 	
 	for group in groups:
 		for ref in group:
 			print(ref)
 		
 		print()
-	
+
+
+def get_references():
+	refs = subprocess.check_output(['git', 'rev-parse', '--symbolic', '--all'])
+	refs = refs.split('\n')
+	for ref in refs:
+		if ref:
+			yield ref
+
 
 if __name__ == '__main__':
 	main()
