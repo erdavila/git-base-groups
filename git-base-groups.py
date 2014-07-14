@@ -49,17 +49,10 @@ def main():
 		if len(group.refs) == 1:
 			refs_without_common_base.append(group.refs[0])
 		else:
-			print()
-			print("Have common base", group.base + ":")
-			for ref in sorted(group.refs):
-				print('\t', ref)
-			
-	
+			print_refs_list("Have common base " + group.base, group.refs)
+
 	if refs_without_common_base:
-		print()
-		print("Without common base:")
-		for ref in sorted(refs_without_common_base):
-			print('\t', ref)
+		print_refs_list("Without common base", refs_without_common_base)
 
 
 ref_type = subprocess.Popen(['git', 'cat-file', '--batch-check=%(objecttype)'],
@@ -85,6 +78,13 @@ def get_base(*refs):
 	else:
 		base = base_output.split('\n')[0]
 	return base
+
+
+def print_refs_list(title, refs):
+	print()
+	print(title + ":")
+	for ref in sorted(refs):
+		print('\t', ref)
 
 
 if __name__ == '__main__':
