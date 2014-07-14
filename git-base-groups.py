@@ -16,24 +16,24 @@ class Group(object):
 
 def main():
 	groups = []
-	
+
 	refs = get_references()
-	
 	for ref in refs:
-		added = False
-		for group in groups:
-			base = get_base(ref, group.base)
-			if base:
-				group.refs.append(ref)
-				group.base = base
-				added = True
-				break
-		if not added:
-			new_group = Group(base=ref, refs=[ref])
-			groups.append(new_group)
-	
+		if is_commit_reference(ref):
+			added = False
+			for group in groups:
+				base = get_base(ref, group.base)
+				if base:
+					group.refs.append(ref)
+					group.base = base
+					added = True
+					break
+			if not added:
+				new_group = Group(base=ref, refs=[ref])
+				groups.append(new_group)
+
 	groups.sort(key=lambda group:group.base)
-	
+
 	refs_without_common_base = []
 	for group in groups:
 		if len(group.refs) == 1:
@@ -49,6 +49,16 @@ def main():
 		print("Without common base:")
 		for ref in sorted(refs_without_common_base):
 			print('\t', ref)
+
+
+ref_type = subprocess.Popen(['git', 'cat-file', '--batch-check=%(objecttype)'],
+						stdin=subprocess.PIPE,
+						stdout=subprocess.PIPE,
+						stderr=open('/dev/null', 'w'))
+def is_commit_reference(ref):
+	print(ref + '^{commit}', file=ref_type.stdin)
+	type = ref_type.stdout.readline()
+	return type.startswith('commit')
 
 
 def get_references():
